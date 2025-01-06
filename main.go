@@ -8,7 +8,10 @@ import (
 
 func main() {
 	cfg := config.Read()
-	cfg.SetUser("Crymson")
+	err := cfg.SetUser("Crymson")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	cfg = config.Read()
 	fmt.Printf("db_url: %s\ncurrent_user_name: %s\n", cfg.DbURL, cfg.CurrentUserName)
 }
