@@ -2,22 +2,28 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/CrymsonShadows/blog-aggregator/internal/config"
 )
 
 func main() {
-	cfg := config.Read()
-	s := &state{
+	cfg, err := config.Read()
+	if err != nil {
+		log.Fatalf("error reading from config: %v", err)
+	}
+	programState := &state{
 		cfg: &cfg,
 	}
+
 	cmds := commands{
-		commandsMap: map[string]func(*state, command) error{},
+		registeredCommands: map[string]func(*state, command) error{},
 	}
 	cmds.register("login", handlerLogin)
+
 	cmdLineArgs := os.Args
-	if len(cmdLineArgs) < 3 {
+	if len(cmdLineArgs) < 2 {
 		fmt.Println("need more arguments")
 		os.Exit(1)
 	}
@@ -27,7 +33,7 @@ func main() {
 		name: cmdName,
 		args: cmdArgs,
 	}
-	err := cmds.run(s, cmd)
+	err = cmds.run(programState, cmd)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)

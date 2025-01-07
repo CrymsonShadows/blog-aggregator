@@ -16,32 +16,20 @@ type command struct {
 }
 
 type commands struct {
-	commandsMap map[string]func(*state, command) error
+	registeredCommands map[string]func(*state, command) error
 }
 
 func (c *commands) register(name string, f func(*state, command) error) {
-	_, ok := c.commandsMap[name]
+	_, ok := c.registeredCommands[name]
 	if !ok {
-		c.commandsMap[name] = f
+		c.registeredCommands[name] = f
 	}
 }
 
 func (c *commands) run(s *state, cmd command) error {
-	if _, ok := c.commandsMap[cmd.name]; !ok {
+	f, ok := c.registeredCommands[cmd.name]
+	if !ok {
 		return fmt.Errorf("the %s command does not exist", cmd.name)
 	}
-	err := c.commandsMap[cmd.name](s, cmd)
-	return err
-}
-
-func handlerLogin(s *state, cmd command) error {
-	if len(cmd.args) == 0 {
-		return fmt.Errorf("login expects a username")
-	}
-	err := s.cfg.SetUser(cmd.args[0])
-	if err != nil {
-		return err
-	}
-	fmt.Printf("User has been set to: %s\n", cmd.args[0])
-	return nil
+	return f(s, cmd)
 }

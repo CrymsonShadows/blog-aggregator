@@ -30,26 +30,23 @@ func getConfigFilePath() (string, error) {
 	return fmt.Sprintf("%s/%s", homeDir, configFileName), nil
 }
 
-func Read() Config {
+func Read() (Config, error) {
 	configDir, err := getConfigFilePath()
 	if err != nil {
-		fmt.Println(err.Error())
-		return Config{}
+		return Config{}, err
 	}
 	file, err := os.Open(configDir)
 	if err != nil {
-		fmt.Println(err.Error())
-		return Config{}
+		return Config{}, err
 	}
 	defer file.Close()
 	decoder := json.NewDecoder(file)
 	config := Config{}
 	err = decoder.Decode(&config)
 	if err != nil {
-		fmt.Println(err.Error())
-		return Config{}
+		return Config{}, err
 	}
-	return config
+	return config, nil
 }
 
 func write(cfg *Config) error {
