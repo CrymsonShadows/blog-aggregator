@@ -1,11 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/CrymsonShadows/blog-aggregator/internal/config"
+	"github.com/CrymsonShadows/blog-aggregator/internal/database"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -13,7 +16,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("error reading from config: %v", err)
 	}
+
+	db, err := sql.Open("postgres", cfg.DbURL)
+	if err != nil {
+		log.Fatalf("error opening database: %v", err)
+	}
+
+	dbQueries := database.New(db)
 	programState := &state{
+		db:  dbQueries,
 		cfg: &cfg,
 	}
 
@@ -21,6 +32,7 @@ func main() {
 		registeredCommands: map[string]func(*state, command) error{},
 	}
 	cmds.register("login", handlerLogin)
+	cmds.register("register", handlerRegister)
 
 	cmdLineArgs := os.Args
 	if len(cmdLineArgs) < 2 {
