@@ -3,14 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+
+	"github.com/CrymsonShadows/blog-aggregator/internal/database"
 )
 
-func handlerFollowing(s *state, cmd command) error {
-	currentUser, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("error getting current user: %v", err)
-	}
-	feedFollows, err := s.db.GetFeedFollowsForUser(context.Background(), currentUser.ID)
+func handlerFollowing(s *state, cmd command, user database.User) error {
+	feedFollows, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
 	if err != nil {
 		return fmt.Errorf("error getting feed follows for user: %s: %v", s.cfg.CurrentUserName, err)
 	}
