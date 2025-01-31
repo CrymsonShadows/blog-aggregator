@@ -10,18 +10,28 @@ import (
 )
 
 func handlerAgg(s *state, cmd command) error {
-	feed, err := fetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
-	if err != nil {
-		return err
+	if len(cmd.args) != 1 {
+		return fmt.Errorf("agg needs a time bewtween reqs")
 	}
-	fmt.Println(feed)
+
+	time_between_reqs, err := time.ParseDuration(cmd.args[0])
+	if err != nil {
+		return fmt.Errorf("error parsing time duration: %v", err)
+	}
+
+	fmt.Printf("Collecting feeds every %v\n", cmd.args[0])
+	ticker := time.NewTicker(time_between_reqs)
+	for _ = range ticker.C {
+		scrapeFeeds(s)
+	}
+
 	return nil
 }
 
 func scrapeFeeds(s *state) {
 	nextFeed, err := s.db.GetNextFeedToFetch(context.Background())
 	if err != nil {
-		fmt.Println("was unable to get next feed to fetch from database")
+		fmt.Printf("was unable to get next feed to fetch from database: %v", err)
 	}
 
 	currentTime := sql.NullTime{
@@ -41,8 +51,8 @@ func scrapeFeeds(s *state) {
 		fmt.Printf("error fetching from %v", err)
 	}
 
-	fmt.Printf("Feed: %s", feed.Channel.Title)
+	fmt.Printf("Feed: %s\n", feed.Channel.Title)
 	for i, item := range feed.Channel.Item {
-		fmt.Printf("Item %d: %s\n", i, item.Title)
+		fmt.Printf("\tItem %d: %s\n", i, item.Title)
 	}
 }
