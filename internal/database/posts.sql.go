@@ -63,8 +63,6 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 	)
 	return i, err
 }
-<<<<<<< Updated upstream
-=======
 
 const getPostsByUserID = `-- name: GetPostsByUserID :many
 WITH users_feed_follows AS (
@@ -133,4 +131,3 @@ func (q *Queries) GetPostsByUserID(ctx context.Context, arg GetPostsByUserIDPara
 	}
 	return items, nil
 }
->>>>>>> Stashed changes
