@@ -18,5 +18,5 @@ WITH users_feed_follows AS (
     WHERE $1 = feed_follows.user_id
 )
 SELECT * FROM posts
-WHERE users_feed_follows.feed_id = feed_id
+INNER JOIN users_feed_follows ON users_feed_follows.feed_id = posts.feed_id
 ORDER BY published_at DESC LIMIT $2;
