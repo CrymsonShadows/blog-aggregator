@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/CrymsonShadows/blog-aggregator/internal/database"
+	"github.com/google/uuid"
 )
 
 func handlerAgg(s *state, cmd command) error {
@@ -53,6 +55,45 @@ func scrapeFeeds(s *state) {
 
 	fmt.Printf("Feed: %s\n", feed.Channel.Title)
 	for i, item := range feed.Channel.Item {
+		var title sql.NullString
+		var description sql.NullString
+		if item.Title == "" {
+			title.Valid = false
+		} else {
+			title.Valid = true
+			title.String = item.Title
+		}
+		if item.Description == "" {
+			description.Valid = false
+		} else {
+			description.Valid = true
+			description.String = item.Description
+		}
+
+		pubDate, err := time.Parse(time.RFC1123Z, item.PubDate)
+		if err != nil {
+			fmt.Printf("TIME: %v\n", item.PubDate)
+			fmt.Printf("error parsing publish time for post: %s\n%v\n", item.Title, err)
+			os.Exit(1)
+		}
+
 		fmt.Printf("\tItem %d: %s\n", i, item.Title)
+		_, err = s.db.CreatePost(context.Background(), database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+			Title:       title,
+			Url:         item.Link,
+			Description: description,
+			PublishedAt: pubDate,
+			FeedID:      nextFeed.ID,
+		})
+		if err != nil {
+			if err.Error() == "pq: duplicate key value violates unique constraint \"posts_url_key\"" {
+				continue
+			}
+			fmt.Printf("error creating post in database: %v\n", err)
+			// os.Exit(1)
+		}
 	}
 }

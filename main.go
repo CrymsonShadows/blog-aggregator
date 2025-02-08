@@ -41,6 +41,7 @@ func main() {
 	cmds.register("follow", midllewareLoggedIn(handlerFollow))
 	cmds.register("following", midllewareLoggedIn(handlerFollowing))
 	cmds.register("unfollow", midllewareLoggedIn(handlerUnfollow))
+	cmds.register("browse", midllewareLoggedIn(handlerBrowse))
 
 	cmdLineArgs := os.Args
 	if len(cmdLineArgs) < 2 {
