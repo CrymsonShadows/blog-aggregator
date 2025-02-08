@@ -12,7 +12,7 @@ VALUES (
 )
 RETURNING *;
 
--- name: GetFeedByUserID :one
+-- name: GetPostsByUserID :many
 WITH users_feed_follows AS (
     SELECT * FROM feed_follows
     WHERE $1 = feed_follows.user_id
